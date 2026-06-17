@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Pedidos - OnePlay</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: white;
+            color: #e0e0e0;
+            background-image: linear-gradient(rgba(10, 10, 12, 0.9), rgba(10, 10, 12, 0.9)), url('./img/fundo.png');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(20, 20, 25, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 180, 216, 0.2);
+            border: 1px solid rgba(0, 180, 216, 0.3);
+        }
+
+        h2 {
+            color: #00b4d8;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+        }
+
+        .voltar {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #00b4d8;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .voltar:hover {
+            text-decoration: underline;
+        }
+
+        .pedido {
+            background: rgba(30, 30, 40, 0.8);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #00b4d8;
+        }
+
+        .pedido-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .pedido-id {
+            color: #00b4d8;
+            font-weight: bold;
+        }
+
+        .pedido-data {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .pedido-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .pedido-info span {
+            color: #999;
+        }
+
+        .pedido-info strong {
+            color: #fff;
+        }
+
+        .sem-pedidos {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+        }
+
+        .excluir-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .excluir-btn:hover {
+            background: #b71c1c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="voltar">← Voltar ao formulário</a>
+        <h2>📋 Pedidos Salvos</h2>
+        <div id="lista-pedidos"></div>
+    </div>
+
+    <script type="module">
+        import { db, ref, onValue, remove } from "./firebase-config.js";
+
+        const listaPedidos = document.getElementById('lista-pedidos');
+        const pedidosRef = ref(db, 'pedidos');
+
+        function criarPedidoHtml(id, pedido) {
+            return `
+                <div class="pedido">
+                    <div class="pedido-header">
+                        <span class="pedido-id">Pedido: ${id}</span>
+                        <span class="pedido-data">${pedido.data_cadastro || ''}</span>
+                    </div>
+                    <div class="pedido-info">
+                        <div><strong>Nome:</strong> <span>${pedido.nome || '—'}</span></div>
+                        <div><strong>Plataforma:</strong> <span>${pedido.plataforma || '—'}</span></div>
+                        <div><strong>Produto:</strong> <span>${pedido.produto || '—'}</span></div>
+                        <div><strong>Título:</strong> <span>${pedido.nome_filme || '—'}</span></div>
+                        <div><strong>Data do Pedido:</strong> <span>${pedido.data_pedido || '—'}</span></div>
+                        <div><strong>Detalhes:</strong> <span>${pedido.detalhes || '—'}</span></div>
+                    </div>
+                    <button class="excluir-btn" data-id="${id}">Excluir</button>
+                </div>
+            `;
+        }
+
+        onValue(pedidosRef, (snapshot) => {
+            const pedidos = snapshot.val();
+            if (!pedidos) {
+                listaPedidos.innerHTML = '<div class="sem-pedidos">Nenhum pedido encontrado.</div>';
+                return;
+            }
+
+            listaPedidos.innerHTML = Object.entries(pedidos)
+                .map(([id, pedido]) => criarPedidoHtml(id, pedido))
+                .join('');
+
+            listaPedidos.querySelectorAll('.excluir-btn').forEach((button) => {
+                button.addEventListener('click', async () => {
+                    const pedidoId = button.getAttribute('data-id');
+                    if (!confirm('Deseja excluir este pedido?')) return;
+                    try {
+                        await remove(ref(db, `pedidos/${pedidoId}`));
+                    } catch (error) {
+                        console.error('Erro ao excluir pedido:', error);
+                        alert('Erro ao excluir o pedido.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

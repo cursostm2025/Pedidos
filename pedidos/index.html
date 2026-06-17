@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos Filmes e Series</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #0a0a0c;
+            color: #e0e0e0;
+            background-image: linear-gradient(rgba(10, 10, 12, 0.3), rgba(10, 10, 12, 0.3)), url('./img/fundo.png');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(20, 20, 25, 0.5);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 180, 216, 0.2);
+            border: 1px solid rgba(0, 180, 216, 0.3);
+        }
+
+        h2 {
+            color: #00b4d8;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+            text-shadow: 0 0 10px rgba(0, 180, 216, 0.5);
+        }
+
+        .campo {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            box-sizing: border-box;
+            background: #1a1a1e;
+            color: #fff;
+            transition: 0.3s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #00b4d8;
+            box-shadow: 0 0 8px rgba(0, 180, 216, 0.4);
+        }
+
+        button {
+            width: 100%;
+            background: linear-gradient(45deg, #0077b6, #00b4d8);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.4s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 180, 216, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>OnePlay Pedidos de Filmes e Séries</h2>
+        <form id="meuFormulario" action="#" method="post">
+            <div class="campo">
+                <label for="nome">Nome do Usuário:</label>
+                <input type="text" id="nome" name="nome" placeholder="Digite o nome do usuario" required>
+            </div>
+
+            <div class="campo">
+                <label for="plataforma">Plataforma:</label>
+                <input type="text" id="plataforma" name="plataforma" placeholder="Digite  plataforma" required>
+            </div>
+
+            <div class="campo">
+                <label for="produto">Filmes & Séries:</label>
+                <select id="produto" name="produto" required>
+                    <option value="">Selecione um filmes/séries</option>
+                    <option value="filme1">Filmes</option>
+                    <option value="serie">Séries</option>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="nome_filme">Digite o nome do filme ou série:</label>
+                <input type="text" id="nome_filme" name="nome_filme" placeholder="Digite o nome do filme ou série" required>
+            </div>
+
+
+            <div class="campo">
+                <label for="data_pedido">Data do Pedido:</label>
+                <input type="date" id="data_pedido" name="data_pedido" required>
+            </div>
+
+
+             <div class="campo">
+                <label for="detalhes">Detalhes:</label>
+                <textarea id="detalhes" name="detalhes" rows="3"></textarea>
+            </div>
+        <button type="submit">Confirmar Solicitação</button>
+        </form>
+        <div style="margin-top: 20px; text-align: center;">
+            <a href="ver_pedidos.html" style="color: #00b4d8; text-decoration: none; font-size: 14px;">📋 Ver Pedidos Salvos</a>
+        </div>
+    </div>
+    <script type="module">
+        import { db, ref, push } from "./firebase-config.js";
+
+        document.getElementById('meuFormulario').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const pedido = {
+                nome: document.getElementById('nome').value,
+                plataforma: document.getElementById('plataforma').value,
+                produto: document.getElementById('produto').value,
+                nome_filme: document.getElementById('nome_filme').value,
+                data_pedido: document.getElementById('data_pedido').value,
+                detalhes: document.getElementById('detalhes').value,
+                data_cadastro: new Date().toLocaleString('pt-BR')
+            };
+
+            try {
+                const pedidosRef = ref(db, 'pedidos');
+                const novoPedidoRef = await push(pedidosRef, pedido);
+                
+                alert('✅ Pedido enviado ao Firebase com sucesso!\nID: ' + novoPedidoRef.key);
+                document.getElementById('meuFormulario').reset();
+            } catch (error) {
+                console.error("Erro ao salvar no Firebase: ", error);
+                alert('❌ Erro ao salvar o pedido.');
+            }
+        });
+    </script>
+</body>
+</html>
